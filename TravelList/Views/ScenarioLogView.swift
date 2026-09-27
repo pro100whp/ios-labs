@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ContentView: View {
+struct ScenarioLogView: View {
     @State private var lines: [String] = []
 
     var body: some View {
@@ -9,7 +9,7 @@ struct ContentView: View {
                 Text(line)
                     .font(line.hasPrefix(" ") ? Font.body : Font.headline)
             }
-            .navigationTitle("TravelList")
+            .navigationTitle("Сценарій")
             .toolbar {
                 Button("Запустити") {
                     runScenario()
@@ -25,8 +25,4 @@ struct ContentView: View {
         var scenario = TripScenario()
         lines = scenario.run()
     }
-}
-
-#Preview {
-    ContentView()
 }
