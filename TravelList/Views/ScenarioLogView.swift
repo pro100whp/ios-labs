@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ScenarioLogView: View {
+    @EnvironmentObject private var router: AppRouter
     @State private var lines: [String] = []
 
     var body: some View {
@@ -9,10 +10,18 @@ struct ScenarioLogView: View {
                 Text(line)
                     .font(line.hasPrefix(" ") ? Font.body : Font.headline)
             }
-            .navigationTitle("Сценарій")
+            .navigationTitle("Сценарій ПР1")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                Button("Запустити") {
-                    runScenario()
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрити") {
+                        router.dismissSheet()
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Запустити") {
+                        runScenario()
+                    }
                 }
             }
             .onAppear {

@@ -1,11 +1,12 @@
+import Combine
 import Foundation
 
 final class CountryListViewModel: ObservableObject {
     @Published private(set) var countries: [Country] = []
     @Published private(set) var isLoading = false
-    @Published private(set) var errorMessage: String?
-    @Published private(set) var tripCount = 0
-    @Published var selectedRegion: Region? {
+    @Published private(set) var errorMessage: String? = nil
+    @Published private(set) var tripCountryIds: Set<String> = []
+    @Published var selectedRegion: Region? = nil {
         didSet { applyFilters() }
     }
     @Published var selectedSortIndex = 0 {
@@ -16,6 +17,7 @@ final class CountryListViewModel: ObservableObject {
     private var allCountries: [Country] = []
     private let countryService: any CountryServiceProtocol
     private let tripRepository: any TripRepositoryProtocol
+    private var cancellables = Set<AnyCancellable>()
 
     init(
         countryService: any CountryServiceProtocol,
@@ -25,6 +27,17 @@ final class CountryListViewModel: ObservableObject {
         self.countryService = countryService
         self.tripRepository = tripRepository
         self.sortStrategies = sortStrategies
+        observeTrips()
+    }
+
+    var tripCount: Int {
+        tripCountryIds.count
+    }
+
+    @MainActor
+    func loadIfNeeded() async {
+        guard allCountries.isEmpty, !isLoading else { return }
+        await load()
     }
 
     @MainActor
@@ -37,12 +50,11 @@ final class CountryListViewModel: ObservableObject {
         } catch {
             errorMessage = "Не вдалося завантажити країни"
         }
-        tripCount = tripRepository.items.count
         isLoading = false
     }
 
     func isInTrips(_ country: Country) -> Bool {
-        tripRepository.contains(countryId: country.id)
+        tripCountryIds.contains(country.id)
     }
 
     func toggleTrip(_ country: Country) {
@@ -51,7 +63,15 @@ final class CountryListViewModel: ObservableObject {
         } else {
             _ = tripRepository.add(country)
         }
-        tripCount = tripRepository.items.count
+    }
+
+    private func observeTrips() {
+        tripRepository.itemsPublisher
+            .map { items in Set(items.map { $0.country.id }) }
+            .sink { [weak self] ids in
+                self?.tripCountryIds = ids
+            }
+            .store(in: &cancellables)
     }
 
     private func applyFilters() {

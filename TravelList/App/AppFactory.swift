@@ -26,4 +26,16 @@ final class AppFactory {
     func makeCountryListViewModel() -> CountryListViewModel {
         CountryListViewModel(countryService: countryService, tripRepository: tripRepository)
     }
+
+    func makeCountryDetailViewModel(country: Country) -> CountryDetailViewModel {
+        CountryDetailViewModel(country: country, tripRepository: tripRepository)
+    }
+
+    func makeTripsViewModel() -> TripsViewModel {
+        TripsViewModel(tripRepository: tripRepository)
+    }
+
+    func makeTripFormViewModel(country: Country) -> TripFormViewModel {
+        TripFormViewModel(country: country, tripRepository: tripRepository)
+    }
 }

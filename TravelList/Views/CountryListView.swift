@@ -1,61 +1,73 @@
 import SwiftUI
 
 struct CountryListView: View {
-    @StateObject private var viewModel: CountryListViewModel
-    @State private var isScenarioPresented = false
+    @ObservedObject var viewModel: CountryListViewModel
+    @EnvironmentObject private var router: AppRouter
 
-    init(viewModel: @autoclosure @escaping () -> CountryListViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel())
+    init(viewModel: CountryListViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("Країни")
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        regionMenu
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Демо") {
-                            isScenarioPresented = true
-                        }
-                    }
+        content
+            .navigationTitle("Країни")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    regionMenu
                 }
-                .safeAreaInset(edge: .top) {
-                    sortPicker
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        router.present(.scenario)
+                    } label: {
+                        Image(systemName: "play.circle")
+                    }
+                    .accessibilityLabel("Сценарій ПР1")
+                    Button {
+                        router.push(.trips)
+                    } label: {
+                        Image(systemName: "suitcase")
+                    }
+                    .accessibilityLabel("Мої подорожі")
                 }
-                .safeAreaInset(edge: .bottom) {
+            }
+            .safeAreaInset(edge: .top) {
+                sortPicker
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    router.push(.trips)
+                } label: {
                     Text("У списку подорожей: \(viewModel.tripCount)")
                         .font(.footnote)
                         .frame(maxWidth: .infinity)
-                        .padding(8)
-                        .background(.bar)
+                        .padding(10)
                 }
-                .sheet(isPresented: $isScenarioPresented) {
-                    ScenarioLogView()
-                }
-        }
-        .task {
-            await viewModel.load()
-        }
+                .background(.bar)
+            }
+            .task {
+                await viewModel.loadIfNeeded()
+            }
     }
 
     @ViewBuilder
     private var content: some View {
         if viewModel.isLoading {
             ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let message = viewModel.errorMessage {
             Text(message)
                 .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List(viewModel.countries) { country in
                 CountryRowView(
                     country: country,
                     isInTrips: viewModel.isInTrips(country),
+                    onOpen: { router.push(.countryDetail(country)) },
                     onToggle: { viewModel.toggleTrip(country) }
                 )
             }
+            .listStyle(.plain)
         }
     }
 
@@ -83,8 +95,4 @@ struct CountryListView: View {
             Label(viewModel.selectedRegion?.title ?? "Усі", systemImage: "line.3.horizontal.decrease.circle")
         }
     }
-}
-
-#Preview {
-    CountryListView(viewModel: AppFactory.demo().makeCountryListViewModel())
 }

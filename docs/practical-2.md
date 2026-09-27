@@ -87,7 +87,7 @@ flowchart TD
 private let factory = AppFactory.demo()
 ```
 
-Так само `AppFactory.demo()` використовується в `#Preview` у `CountryListView.swift`. Код `CountryListViewModel` при цьому не змінюється.
+Так само `AppFactory.demo()` використовується в `#Preview` у `Navigation/AppCoordinatorView.swift`. Код `CountryListViewModel` при цьому не змінюється.
 
 ## Перевірка на антипатерни
 

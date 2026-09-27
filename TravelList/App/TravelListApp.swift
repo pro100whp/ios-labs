@@ -6,7 +6,7 @@ struct TravelListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CountryListView(viewModel: factory.makeCountryListViewModel())
+            AppCoordinatorView(factory: factory)
         }
     }
 }

@@ -30,3 +30,4 @@ iOS-застосунок для планування подорожей.
 |---|---|---|
 | ПР1. Створення проєкту, Git та основи Swift | [docs/practical-1.md](docs/practical-1.md) | `Practical 1: ...` |
 | ПР2. Архітектура, патерни проєктування та SOLID | [docs/practical-2.md](docs/practical-2.md) | `Practical 2: ...` |
+| ПР3. Інтерфейс, навігація та анімації | [docs/practical-3.md](docs/practical-3.md) | `Practical 3: ...` |

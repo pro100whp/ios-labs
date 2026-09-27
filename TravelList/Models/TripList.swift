@@ -34,6 +34,15 @@ final class TripList {
         return true
     }
 
+    func save(country: Country, status: TripStatus, note: String?) {
+        if let index = items.firstIndex(where: { $0.country.id == country.id }) {
+            items[index].status = status
+            items[index].note = note
+        } else {
+            items.append(TripItem(country: country, status: status, note: note))
+        }
+    }
+
     func remove(countryId: String) {
         items.removeAll { $0.country.id == countryId }
     }
