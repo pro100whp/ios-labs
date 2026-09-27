@@ -53,4 +53,35 @@ iOS-застосунок для планування подорожей.
 
 ## Перевірка сценарію
 
-Сценарій запускається автоматично при відкритті застосунку. Результат показується на екрані та виводиться в консоль Xcode (**View → Debug Area → Activate Console**). Кнопка **Запустити** виконує сценарій повторно.
+Сценарій ПР1 відкривається кнопкою **Демо** на головному екрані. Результат показується на екрані та виводиться в консоль Xcode (**View → Debug Area → Activate Console**). Кнопка **Запустити** виконує сценарій повторно.
+
+## Архітектура (ПР2)
+
+Архітектура — **MVVM**. Схема компонентів, обґрунтування, патерни, SOLID і антипатерни — у [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+```
+TravelList/
+├── App/          точка входу, AppFactory
+├── Models/       Country, TripItem, TripList, Region, TripStatus
+├── ViewModels/   CountryListViewModel
+├── Views/        CountryListView, CountryRowView, ScenarioLogView
+├── Services/     сервіси даних, репозиторій, стратегії сортування
+├── Data/         локальні дані
+└── Scenario/     сценарій ПР1
+```
+
+| Патерн / принцип | Компонент | Призначення |
+|---|---|---|
+| Factory | `AppFactory` | Створення `ViewModel` і передавання залежностей |
+| Decorator | `LoggingCountryService` | Логування запитів без зміни сервісу |
+| Strategy | `CountrySortStrategy` | Взаємозамінні алгоритми сортування |
+| Observer | `CountryListViewModel` (`@Published`) | Автоматичне оновлення `View` |
+| SRP | `View` / `ViewModel` / `Services` | Кожен компонент має одну відповідальність |
+| OCP | `CountrySortStrategy`, `LoggingCountryService` | Розширення без зміни наявного коду |
+| LSP | реалізації `CountryServiceProtocol` | Взаємозамінні сервіси |
+| ISP | `CountryServiceProtocol`, `TripRepositoryProtocol` | Вузькі окремі інтерфейси |
+| DIP | `CountryListViewModel` | Залежить від протоколів, отримує їх через `init` |
+
+**Сценарій:** на екрані «Країни» обрати регіон (кнопка зліва вгорі) і сортування (перемикач), натиснути ❤️ біля країни — лічильник «У списку подорожей» унизу оновиться.
+
+**Заміна сервісу на демонстраційний:** у `App/TravelListApp.swift` замінити `AppFactory.live()` на `AppFactory.demo()`.

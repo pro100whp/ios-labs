@@ -22,6 +22,9 @@ struct CountryListView: View {
                         }
                     }
                 }
+                .safeAreaInset(edge: .top) {
+                    sortPicker
+                }
                 .safeAreaInset(edge: .bottom) {
                     Text("У списку подорожей: \(viewModel.tripCount)")
                         .font(.footnote)
@@ -56,6 +59,18 @@ struct CountryListView: View {
         }
     }
 
+    private var sortPicker: some View {
+        Picker("Сортування", selection: $viewModel.selectedSortIndex) {
+            ForEach(viewModel.sortStrategies.indices, id: \.self) { index in
+                Text(viewModel.sortStrategies[index].title).tag(index)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(.bar)
+    }
+
     private var regionMenu: some View {
         Menu {
             Picker("Регіон", selection: $viewModel.selectedRegion) {
@@ -68,4 +83,8 @@ struct CountryListView: View {
             Label(viewModel.selectedRegion?.title ?? "Усі", systemImage: "line.3.horizontal.decrease.circle")
         }
     }
+}
+
+#Preview {
+    CountryListView(viewModel: AppFactory.demo().makeCountryListViewModel())
 }

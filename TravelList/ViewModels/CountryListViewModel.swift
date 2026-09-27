@@ -8,14 +8,23 @@ final class CountryListViewModel: ObservableObject {
     @Published var selectedRegion: Region? {
         didSet { applyFilters() }
     }
+    @Published var selectedSortIndex = 0 {
+        didSet { applyFilters() }
+    }
 
+    let sortStrategies: [any CountrySortStrategy]
     private var allCountries: [Country] = []
     private let countryService: any CountryServiceProtocol
     private let tripRepository: any TripRepositoryProtocol
 
-    init(countryService: any CountryServiceProtocol, tripRepository: any TripRepositoryProtocol) {
+    init(
+        countryService: any CountryServiceProtocol,
+        tripRepository: any TripRepositoryProtocol,
+        sortStrategies: [any CountrySortStrategy] = [SortByName(), SortByPopulation(), SortByArea()]
+    ) {
         self.countryService = countryService
         self.tripRepository = tripRepository
+        self.sortStrategies = sortStrategies
     }
 
     @MainActor
@@ -50,6 +59,10 @@ final class CountryListViewModel: ObservableObject {
         if let selectedRegion {
             result = result.filter { $0.region == selectedRegion }
         }
-        countries = result.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+        guard sortStrategies.indices.contains(selectedSortIndex) else {
+            countries = result
+            return
+        }
+        countries = sortStrategies[selectedSortIndex].sort(result)
     }
 }

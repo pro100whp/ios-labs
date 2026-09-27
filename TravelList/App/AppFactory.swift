@@ -10,7 +10,17 @@ final class AppFactory {
     }
 
     static func live() -> AppFactory {
-        AppFactory(countryService: LocalCountryService(), tripRepository: InMemoryTripRepository())
+        AppFactory(
+            countryService: LoggingCountryService(wrapping: LocalCountryService()),
+            tripRepository: InMemoryTripRepository()
+        )
+    }
+
+    static func demo() -> AppFactory {
+        AppFactory(
+            countryService: DemoCountryService(),
+            tripRepository: InMemoryTripRepository()
+        )
     }
 
     func makeCountryListViewModel() -> CountryListViewModel {
