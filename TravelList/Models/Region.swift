@@ -1,21 +1,25 @@
 import Foundation
 
 enum Region: String, CaseIterable {
-    case europe = "Europe"
-    case asia = "Asia"
-    case africa = "Africa"
-    case americas = "Americas"
-    case oceania = "Oceania"
-    case antarctic = "Antarctic"
+    case europeCentralAsia = "ECS"
+    case eastAsiaPacific = "EAS"
+    case southAsia = "SAS"
+    case middleEastNorthAfrica = "MEA"
+    case subSaharanAfrica = "SSF"
+    case northAmerica = "NAC"
+    case latinAmerica = "LCN"
+    case antarctica = "ANT"
 
     var title: String {
         switch self {
-        case .europe: return "Європа"
-        case .asia: return "Азія"
-        case .africa: return "Африка"
-        case .americas: return "Америка"
-        case .oceania: return "Океанія"
-        case .antarctic: return "Антарктида"
+        case .europeCentralAsia: return "Європа та Центральна Азія"
+        case .eastAsiaPacific: return "Східна Азія та Океанія"
+        case .southAsia: return "Південна Азія"
+        case .middleEastNorthAfrica: return "Близький Схід, Північна Африка, Афганістан і Пакистан"
+        case .subSaharanAfrica: return "Африка на південь від Сахари"
+        case .northAmerica: return "Північна Америка"
+        case .latinAmerica: return "Латинська Америка"
+        case .antarctica: return "Антарктида"
         }
     }
 }

@@ -22,6 +22,7 @@ struct AppCoordinatorView: View {
                 .environmentObject(router)
         }
         .environmentObject(router)
+        .environmentObject(factory.dataSourceSwitcher)
     }
 
     @ViewBuilder

@@ -34,8 +34,8 @@ struct TripScenario {
             write("   \(status.title): \(names.joined(separator: ", "))")
         }
 
-        write("5. Фільтрація за регіоном: Європа")
-        for item in tripList.items(in: .europe) {
+        write("5. Фільтрація за регіоном: Європа та Центральна Азія")
+        for item in tripList.items(in: .europeCentralAsia) {
             write("   \(item.summary)")
         }
 

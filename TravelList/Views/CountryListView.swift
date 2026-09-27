@@ -3,6 +3,7 @@ import SwiftUI
 struct CountryListView: View {
     @ObservedObject var viewModel: CountryListViewModel
     @EnvironmentObject private var router: AppRouter
+    @EnvironmentObject private var dataSource: DataSourceSwitcher
 
     init(viewModel: CountryListViewModel) {
         self.viewModel = viewModel
@@ -16,6 +17,7 @@ struct CountryListView: View {
                     regionMenu
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    dataSourceMenu
                     Button {
                         router.present(.scenario)
                     } label: {
@@ -47,28 +49,80 @@ struct CountryListView: View {
             .task {
                 await viewModel.loadIfNeeded()
             }
+            .onChange(of: dataSource.source) {
+                Task {
+                    await viewModel.load()
+                }
+            }
     }
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.isLoading {
-            ProgressView()
+        switch viewModel.state {
+        case .idle, .loading:
+            ProgressView("Завантаження країн…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if let message = viewModel.errorMessage {
-            Text(message)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            List(viewModel.countries) { country in
-                CountryRowView(
-                    country: country,
-                    isInTrips: viewModel.isInTrips(country),
-                    onOpen: { router.push(.countryDetail(country)) },
-                    onToggle: { viewModel.toggleTrip(country) }
-                )
+        case .empty:
+            ContentUnavailableView {
+                Label("Немає даних", systemImage: "globe")
+            } description: {
+                Text("Сервер не повернув жодної країни.")
+            } actions: {
+                retryButton
             }
-            .listStyle(.plain)
+        case .failed(let message):
+            ContentUnavailableView {
+                Label("Помилка завантаження", systemImage: "wifi.exclamationmark")
+            } description: {
+                Text(message)
+            } actions: {
+                retryButton
+            }
+        case .loaded:
+            if viewModel.countries.isEmpty {
+                ContentUnavailableView(
+                    "Немає країн у регіоні",
+                    systemImage: "line.3.horizontal.decrease.circle",
+                    description: Text("Оберіть інший регіон.")
+                )
+            } else {
+                countryList
+            }
         }
+    }
+
+    private var retryButton: some View {
+        Button("Повторити") {
+            Task {
+                await viewModel.load()
+            }
+        }
+        .buttonStyle(.borderedProminent)
+    }
+
+    private var dataSourceMenu: some View {
+        Menu {
+            Picker("Джерело даних", selection: $dataSource.source) {
+                ForEach(dataSource.availableSources) { source in
+                    Text(source.title).tag(source)
+                }
+            }
+        } label: {
+            Image(systemName: "antenna.radiowaves.left.and.right")
+        }
+        .accessibilityLabel("Джерело даних")
+    }
+
+    private var countryList: some View {
+        List(viewModel.countries) { country in
+            CountryRowView(
+                country: country,
+                isInTrips: viewModel.isInTrips(country),
+                onOpen: { router.push(.countryDetail(country)) },
+                onToggle: { viewModel.toggleTrip(country) }
+            )
+        }
+        .listStyle(.plain)
     }
 
     private var sortPicker: some View {
@@ -92,7 +146,13 @@ struct CountryListView: View {
                 }
             }
         } label: {
-            Label(viewModel.selectedRegion?.title ?? "Усі", systemImage: "line.3.horizontal.decrease.circle")
+            Label(
+                viewModel.selectedRegion?.title ?? "Усі регіони",
+                systemImage: viewModel.selectedRegion == nil
+                    ? "line.3.horizontal.decrease.circle"
+                    : "line.3.horizontal.decrease.circle.fill"
+            )
+            .labelStyle(.iconOnly)
         }
     }
 }

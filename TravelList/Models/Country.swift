@@ -10,7 +10,7 @@ struct Country: Identifiable, Hashable {
     let flag: String
 
     var populationText: String {
-        population.formatted()
+        population > 0 ? population.formatted() : "—"
     }
 }
 

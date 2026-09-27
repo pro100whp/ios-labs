@@ -1,10 +1,17 @@
 import Combine
 import Foundation
 
+enum LoadState: Equatable {
+    case idle
+    case loading
+    case loaded
+    case empty
+    case failed(String)
+}
+
 final class CountryListViewModel: ObservableObject {
     @Published private(set) var countries: [Country] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var errorMessage: String? = nil
+    @Published private(set) var state: LoadState = .idle
     @Published private(set) var tripCountryIds: Set<String> = []
     @Published var selectedRegion: Region? = nil {
         didSet { applyFilters() }
@@ -36,21 +43,29 @@ final class CountryListViewModel: ObservableObject {
 
     @MainActor
     func loadIfNeeded() async {
-        guard allCountries.isEmpty, !isLoading else { return }
+        guard state == .idle else { return }
         await load()
     }
 
     @MainActor
     func load() async {
-        isLoading = true
-        errorMessage = nil
+        state = .loading
         do {
-            allCountries = try await countryService.fetchCountries()
+            let loadedCountries = try await countryService.fetchCountries()
+            allCountries = loadedCountries
             applyFilters()
+            state = loadedCountries.isEmpty ? .empty : .loaded
+        } catch let error as NetworkError {
+            allCountries = []
+            applyFilters()
+            state = .failed(error.userMessage)
+        } catch is CancellationError {
+            state = .idle
         } catch {
-            errorMessage = "Не вдалося завантажити країни"
+            allCountries = []
+            applyFilters()
+            state = .failed("Не вдалося завантажити країни.")
         }
-        isLoading = false
     }
 
     func isInTrips(_ country: Country) -> Bool {
